@@ -67,13 +67,6 @@ pipeline {
             }
         }
         stage('Build Container') {
-            agent {
-                docker {
-                    image 'maven:3-alpine'
-                    args '-v /root/.m2:/root/.m2 -v /var/run/docker.sock:/var/run/docker.sock'
-                    reuseNode true
-                }
-            }
             steps {
                 sh './mvnw -B docker:build'
             }
