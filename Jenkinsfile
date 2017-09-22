@@ -43,6 +43,8 @@ pipeline {
                         }
                     }
                     steps {
+                        sh 'yarn install'
+                        sh 'yarn add gulp-cli'
                         sh 'gulp test'
                     }
                 }
