@@ -43,7 +43,9 @@ pipeline {
                         }
                     }
                     steps {
-                        sh '. target/scripts/frontEndTests.sh'
+                        sh 'yarn install'
+                        sh 'yarn global add gulp-cli'
+                        sh 'gulp test'
                     }
                 }
                 stage('Performance') {
