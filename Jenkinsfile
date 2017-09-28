@@ -69,8 +69,13 @@ pipeline {
             }
         }
         stage('Build Container') {
+            environment {
+                DOCKERHUB = credentials("dockerhub")
+            }
             steps {
-                sh "./mvnw -B docker:build -Ddocker-tag=${BUILD_ID} -DpushImageTag"
+                sh "docker login -u '${DOCKERHUB_USR}' -p '${DOCKERHUB_PSW}'"
+                sh "./mvnw -B docker:build -Ddocker-tag=${BUILD_ID}"
+                sh "docker push abayer1138/jhipstersampleapplication:${BUILD_ID}"
             }
         }
         stage('Deploy to Staging') {
