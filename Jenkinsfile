@@ -73,7 +73,7 @@ pipeline {
                 DOCKERHUB = credentials("dockerhub")
             }
             steps {
-                sh "docker login -u '${DOCKERHUB_USR}' -p '${DOCKERHUB_PSW}'"
+                sh "docker login -u ${DOCKERHUB_USR} -p ${DOCKERHUB_PSW}"
                 sh "./mvnw -B docker:build -Ddocker-tag=${BUILD_ID}"
                 sh "docker push abayer1138/jhipstersampleapplication:${BUILD_ID}"
             }
