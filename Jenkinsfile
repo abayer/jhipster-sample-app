@@ -70,9 +70,10 @@ pipeline {
         }
         stage('Build Container') {
             environment {
-                DOCKERHUB = credentials("dockerhub")
+                ACR_CREDS = credentials("acr")
             }
             steps {
+                sh "docker login -u ${ACR_CREDS_USR} -p ${ACR_CREDS_PSW} pipelineregistry.azurecr.io"
                 sh "./mvnw -B docker:build -Ddocker-tag=${BUILD_ID} -DpushImageTag"
             }
         }
