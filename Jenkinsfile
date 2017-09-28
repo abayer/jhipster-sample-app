@@ -78,11 +78,18 @@ pipeline {
             }
         }
         stage('Deploy to Staging') {
+            environment {
+                ACR_CREDS = credentials("acr")
+            }
             steps {
                 acsDeploy azureCredentialsId: 'acs-staging', configFilePaths: 'acsK8sStaging.yml',
                     containerRegistryCredentials: [[credentialsId: 'acr', url: 'https://pipelineregistry.azurecr.io']],
                     containerService: 'abayerPipelineDemo | Kubernetes', enableConfigSubstitution: true,
                     resourceGroupName: 'abayer-pipeline-demo-acs', sshCredentialsId: 'acs-staging-creds'
+                sh "docker login -u ${ACR_CREDS_USR} -p ${ACR_CREDS_PSW} pipelineregistry.azurecr.io"
+                sh "docker pull pipelineregistry.azurecr.io/jhipstersampleapplication:${BUILD_NUMBER}"
+                sh "docker tag pipelineregistry.azurecr.io/jhipstersampleapplication:${BUILD_NUMBER} pipelineregistry.azurecr.io/jhipstersampleapplication:latest"
+                sh "docker push pipelineregistry.azurecr.io/jhipstersampleapplication:latest"
             }
         }
         stage('Deploy to production') {
