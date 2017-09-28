@@ -70,7 +70,7 @@ pipeline {
         }
         stage('Build Container') {
             steps {
-                sh './mvnw -B docker:build'
+                sh "./mvnw -B docker:build -Ddocker-tag=${BUILD_ID} -DpushImageTag"
             }
         }
         stage('Deploy to Staging') {
