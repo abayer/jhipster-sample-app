@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: jhipster-sample-deployment
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: jhipster-sample-app
+    spec:
+      containers:
+      - name: jhipster-sample-app-container
+        image: pipelineregistry.azurecr.io/jhipstersampleapplication:$BUILD_NUMBER
+        ports:
+        - containerPort: 8080
