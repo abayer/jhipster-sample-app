@@ -56,7 +56,7 @@ pipeline {
                     }
                     post {
                         always {
-                            junit 'target/test-reports/karma/TESTS-results.xml'
+                            junit 'target/test-results/karma/TESTS-results.xml'
                         }
                     }
                 }
