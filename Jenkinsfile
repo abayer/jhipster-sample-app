@@ -105,7 +105,7 @@ pipeline {
         }
         stage('Deploy to production') {
             steps {
-                input message: 'Deploy to production?', ok: 'Fire zee missiles!'
+                input message: 'Deploy to production?', ok: 'Deploy!'
                 acsDeploy azureCredentialsId: 'acs-staging', configFilePaths: 'acsK8sProduction.yml',
                     containerRegistryCredentials: [[credentialsId: 'acr', url: 'https://pipelineregistry.azurecr.io']],
                     containerService: 'abayerPipelineDemo | Kubernetes', enableConfigSubstitution: true,
