@@ -4,6 +4,13 @@ pipeline {
     }
     environment {
         REL_VERSION = "${BRANCH_NAME.contains('release-') ? BRANCH_NAME.drop(BRANCH_NAME.lastIndexOf('-')+1) + '.' + BUILD_NUMBER : 'M.' + BUILD_NUMBER}"
+        ACR_CREDS = credentials("acr")
+    }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr:'20'))
+        timestamps()
+        skipStagesAfterUnstable()
     }
 
     stages {
@@ -47,6 +54,11 @@ pipeline {
                         sh 'yarn add gulp-cli'
                         sh 'gulp test'
                     }
+                    post {
+                        always {
+                            junit 'target/test-reports/karma/TESTS-results.xml'
+                        }
+                    }
                 }
                 stage('Performance') {
                     when {
@@ -65,22 +77,21 @@ pipeline {
                     steps {
                         sh 'mvn -B gatling:execute'
                     }
+                    post {
+                        always {
+                            gatlingArchive()
+                        }
+                    }
                 }
             }
         }
         stage('Build Container') {
-            environment {
-                ACR_CREDS = credentials("acr")
-            }
             steps {
                 sh "docker login -u ${ACR_CREDS_USR} -p ${ACR_CREDS_PSW} pipelineregistry.azurecr.io"
                 sh "./mvnw -B docker:build -Ddocker-tag=${BUILD_ID} -DpushImageTag"
             }
         }
         stage('Deploy to Staging') {
-            environment {
-                ACR_CREDS = credentials("acr")
-            }
             steps {
                 acsDeploy azureCredentialsId: 'acs-staging', configFilePaths: 'acsK8sStaging.yml',
                     containerRegistryCredentials: [[credentialsId: 'acr', url: 'https://pipelineregistry.azurecr.io']],
