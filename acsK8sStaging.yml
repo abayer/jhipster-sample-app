@@ -11,6 +11,6 @@ spec:
     spec:
       containers:
       - name: jhipster-staging-app-container
-        image: pipelineregistry.azurecr.io/jhipstersampleapplication:$BUILD_NUMBER
+        image: pipelineregistry.azurecr.io/jhipstersampleapplication:$REL_VERSION
         ports:
         - containerPort: 8080

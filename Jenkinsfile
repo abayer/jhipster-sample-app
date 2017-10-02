@@ -3,7 +3,7 @@ pipeline {
         label "docker"
     }
     environment {
-        REL_VERSION = "${BRANCH_NAME.contains('release-') ? BRANCH_NAME.drop(BRANCH_NAME.lastIndexOf('-')+1) + '.' + BUILD_NUMBER : 'M.' + BUILD_NUMBER}"
+        REL_VERSION = "${BRANCH_NAME == "master" ? BRANCH_NAME.drop(BRANCH_NAME.lastIndexOf('-')+1) + '.' + BUILD_NUMBER : 'M.' + BUILD_NUMBER}"
         ACR_CREDS = credentials("acr")
     }
 
@@ -38,7 +38,6 @@ pipeline {
                     when {
                         anyOf {
                             branch "master"
-                            branch "release-*"
                             changeset "src/main/webapp/**/*"
                         }
                     }
@@ -64,7 +63,6 @@ pipeline {
                     when {
                         anyOf {
                             branch "master"
-                            branch "release-*"
                         }
                     }
                     agent {
@@ -88,7 +86,7 @@ pipeline {
         stage('Build Container') {
             steps {
                 sh "docker login -u ${ACR_CREDS_USR} -p ${ACR_CREDS_PSW} pipelineregistry.azurecr.io"
-                sh "./mvnw -B docker:build -Ddocker-tag=${BUILD_ID} -DpushImageTag"
+                sh "./mvnw -B docker:build -Ddocker-tag=${REL_VERSION} -DpushImageTag"
             }
         }
         stage('Deploy to Staging') {
@@ -97,13 +95,24 @@ pipeline {
                     containerRegistryCredentials: [[credentialsId: 'acr', url: 'https://pipelineregistry.azurecr.io']],
                     containerService: 'abayerPipelineDemo | Kubernetes', enableConfigSubstitution: true,
                     resourceGroupName: 'abayer-pipeline-demo-acs', sshCredentialsId: 'acs-staging-creds'
+            }
+        }
+
+        stage('Promote Image') {
+            when {
+                branch "master"
+            }
+            steps {
                 sh "docker login -u ${ACR_CREDS_USR} -p ${ACR_CREDS_PSW} pipelineregistry.azurecr.io"
-                sh "docker pull pipelineregistry.azurecr.io/jhipstersampleapplication:${BUILD_NUMBER}"
-                sh "docker tag pipelineregistry.azurecr.io/jhipstersampleapplication:${BUILD_NUMBER} pipelineregistry.azurecr.io/jhipstersampleapplication:latest"
+                sh "docker pull pipelineregistry.azurecr.io/jhipstersampleapplication:${REL_VERSION}"
+                sh "docker tag pipelineregistry.azurecr.io/jhipstersampleapplication:${REL_VERSION} pipelineregistry.azurecr.io/jhipstersampleapplication:latest"
                 sh "docker push pipelineregistry.azurecr.io/jhipstersampleapplication:latest"
             }
         }
         stage('Deploy to production') {
+            when {
+                branch "master"
+            }
             steps {
                 input message: 'Deploy to production?', ok: 'Deploy!'
                 acsDeploy azureCredentialsId: 'acs-staging', configFilePaths: 'acsK8sProduction.yml',
