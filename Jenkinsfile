@@ -3,7 +3,7 @@ pipeline {
         label "docker"
     }
     environment {
-        REL_VERSION = "${BRANCH_NAME == "master" ? BRANCH_NAME.drop(BRANCH_NAME.lastIndexOf('-')+1) + '.' + BUILD_NUMBER : 'M.' + BUILD_NUMBER}"
+        REL_VERSION = "${BRANCH_NAME}.${BUILD_NUMBER}"
         ACR_CREDS = credentials("acr")
     }
 
@@ -94,7 +94,7 @@ pipeline {
                 acsDeploy azureCredentialsId: 'acs-staging', configFilePaths: 'acsK8sStaging.yml',
                     containerRegistryCredentials: [[credentialsId: 'acr', url: 'https://pipelineregistry.azurecr.io']],
                     containerService: 'abayerPipelineDemo | Kubernetes', enableConfigSubstitution: true,
-                    resourceGroupName: 'abayer-pipeline-demo-acs', sshCredentialsId: 'acs-staging-creds'
+                    resourceGroupName: 'abayer-pipeline-demo-acs', sshCredentialsId: 'acs-ssh-creds'
             }
         }
 
@@ -118,7 +118,7 @@ pipeline {
                 acsDeploy azureCredentialsId: 'acs-staging', configFilePaths: 'acsK8sProduction.yml',
                     containerRegistryCredentials: [[credentialsId: 'acr', url: 'https://pipelineregistry.azurecr.io']],
                     containerService: 'abayerPipelineDemo | Kubernetes', enableConfigSubstitution: true,
-                    resourceGroupName: 'abayer-pipeline-demo-acs', sshCredentialsId: 'acs-staging-creds'
+                    resourceGroupName: 'abayer-pipeline-demo-acs', sshCredentialsId: 'acs-ssh-creds'
             }
         }
     }
