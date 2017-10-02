@@ -91,10 +91,14 @@ pipeline {
         }
         stage('Deploy to Staging') {
             steps {
-                acsDeploy azureCredentialsId: 'acs-staging', configFilePaths: 'acsK8sStaging.yml',
-                    containerRegistryCredentials: [[credentialsId: 'acr', url: 'https://pipelineregistry.azurecr.io']],
-                    containerService: 'abayerPipelineDemo | Kubernetes', enableConfigSubstitution: true,
-                    resourceGroupName: 'abayer-pipeline-demo-acs', sshCredentialsId: 'acs-ssh-creds'
+                acsDeploy azureCredentialsId: 'acs-staging',
+                    configFilePaths: 'acsK8sStaging.yml',
+                    containerRegistryCredentials: [[credentialsId: 'acr',
+                                                    url: 'https://pipelineregistry.azurecr.io']],
+                    containerService: 'abayerPipelineDemo | Kubernetes',
+                    enableConfigSubstitution: true,
+                    resourceGroupName: 'abayer-pipeline-demo-acs',
+                    sshCredentialsId: 'acs-ssh-creds'
             }
         }
 
@@ -105,7 +109,8 @@ pipeline {
             steps {
                 sh "docker login -u ${ACR_CREDS_USR} -p ${ACR_CREDS_PSW} pipelineregistry.azurecr.io"
                 sh "docker pull pipelineregistry.azurecr.io/jhipstersampleapplication:${REL_VERSION}"
-                sh "docker tag pipelineregistry.azurecr.io/jhipstersampleapplication:${REL_VERSION} pipelineregistry.azurecr.io/jhipstersampleapplication:latest"
+                sh "docker tag pipelineregistry.azurecr.io/jhipstersampleapplication:${REL_VERSION} " +
+                    "pipelineregistry.azurecr.io/jhipstersampleapplication:latest"
                 sh "docker push pipelineregistry.azurecr.io/jhipstersampleapplication:latest"
             }
         }
@@ -115,10 +120,14 @@ pipeline {
             }
             steps {
                 input message: 'Deploy to production?', ok: 'Deploy!'
-                acsDeploy azureCredentialsId: 'acs-staging', configFilePaths: 'acsK8sProduction.yml',
-                    containerRegistryCredentials: [[credentialsId: 'acr', url: 'https://pipelineregistry.azurecr.io']],
-                    containerService: 'abayerPipelineDemo | Kubernetes', enableConfigSubstitution: true,
-                    resourceGroupName: 'abayer-pipeline-demo-acs', sshCredentialsId: 'acs-ssh-creds'
+                acsDeploy azureCredentialsId: 'acs-staging',
+                    configFilePaths: 'acsK8sProduction.yml',
+                    containerRegistryCredentials: [[credentialsId: 'acr',
+                                                    url: 'https://pipelineregistry.azurecr.io']],
+                    containerService: 'abayerPipelineDemo | Kubernetes',
+                    enableConfigSubstitution: true,
+                    resourceGroupName: 'abayer-pipeline-demo-acs',
+                    sshCredentialsId: 'acs-ssh-creds'
             }
         }
     }
