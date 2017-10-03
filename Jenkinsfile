@@ -91,14 +91,16 @@ pipeline {
         }
         stage('Deploy to Staging') {
             steps {
-                acsDeploy azureCredentialsId: 'acs-staging',
-                    configFilePaths: 'acsK8sStaging.yml',
-                    containerRegistryCredentials: [[credentialsId: 'acr',
-                                                    url: 'https://pipelineregistry.azurecr.io']],
-                    containerService: 'abayerPipelineDemo | Kubernetes',
-                    enableConfigSubstitution: true,
-                    resourceGroupName: 'abayer-pipeline-demo-acs',
-                    sshCredentialsId: 'acs-ssh-creds'
+                withEnv(["ENV_NAME=staging", "IMAGE_TAG=${REL_VERSION}"]) {
+                    acsDeploy azureCredentialsId: 'acs-staging',
+                        configFilePaths: 'acsK8s.yml',
+                        containerRegistryCredentials: [[credentialsId: 'acr',
+                                                        url: 'https://pipelineregistry.azurecr.io']],
+                        containerService: 'abayerPipelineDemo | Kubernetes',
+                        enableConfigSubstitution: true,
+                        resourceGroupName: 'abayer-pipeline-demo-acs',
+                        sshCredentialsId: 'acs-ssh-creds'
+                }
             }
         }
 
@@ -120,14 +122,16 @@ pipeline {
             }
             steps {
                 input message: 'Deploy to production?', ok: 'Deploy!'
-                acsDeploy azureCredentialsId: 'acs-staging',
-                    configFilePaths: 'acsK8sProduction.yml',
-                    containerRegistryCredentials: [[credentialsId: 'acr',
-                                                    url: 'https://pipelineregistry.azurecr.io']],
-                    containerService: 'abayerPipelineDemo | Kubernetes',
-                    enableConfigSubstitution: true,
-                    resourceGroupName: 'abayer-pipeline-demo-acs',
-                    sshCredentialsId: 'acs-ssh-creds'
+                withEnv(["ENV_NAME=prod", "IMAGE_TAG=latest"]) {
+                    acsDeploy azureCredentialsId: 'acs-staging',
+                        configFilePaths: 'acsK8s.yml',
+                        containerRegistryCredentials: [[credentialsId: 'acr',
+                                                        url: 'https://pipelineregistry.azurecr.io']],
+                        containerService: 'abayerPipelineDemo | Kubernetes',
+                        enableConfigSubstitution: true,
+                        resourceGroupName: 'abayer-pipeline-demo-acs',
+                        sshCredentialsId: 'acs-ssh-creds'
+                }
             }
         }
     }
